@@ -1,0 +1,89 @@
+﻿<Window x:Class="Gerador_de_Documentos.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Gerador_de_Documentos"
+        mc:Ignorable="d"
+        Title="Gerador de Documentos" Height="316.615" Width="800" WindowStartupLocation="CenterScreen">
+    <Border Padding="10">
+        <StackPanel>
+            <TextBlock Text="Ficheiro" FontWeight="Bold" Margin="0 10" TextAlignment="Center"/>
+            <TextBlock Padding="1"/>
+            <Grid Margin="20 0 10 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+             
+                </Grid.ColumnDefinitions>
+                <ListBox Margin="0 0 10 0" Grid.Column="0" Name="ficheirosSelecionados" />
+                <Button Margin="10 0 0 0" Content="Selecionar" Grid.Column="1" Name="botaoSelecionar" Click="clicarBotaoSelecionar"/>
+
+            </Grid>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                
+                
+                <StackPanel Grid.Column="0" Margin="10 20 0 0">
+                    <TextBlock Text="Indicadores" TextAlignment="Center" FontWeight="Bold"/>
+
+                    <StackPanel Margin="10 0 10 0">
+                        <TextBlock Text="Campo"/>
+                    <ComboBox Grid.Column="0" Name="comboIndicadorListaCampo" />
+                    </StackPanel>
+                    
+                    <StackPanel Margin="10 10 10 0">
+                    <TextBlock Text="Filtro" />
+                    <ComboBox Grid.Column="0" Name="comboIndicadorListaFiltros"/>
+                    </StackPanel>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1" Margin="10 20 0 0">
+                    <TextBlock Text="Unidades Sanitarias" TextAlignment="Center" FontWeight="Bold"/>
+
+                    <StackPanel Margin="10 0 10 0">
+                        <TextBlock Text="Campo"/>
+                        <ComboBox Grid.Column="0" Name="comboUSListaCampo" />
+                    </StackPanel>
+
+                    <StackPanel Margin="10 10 10 0">
+                        <TextBlock Text="Filtro" />
+                        <ComboBox Grid.Column="0" Name="comboUSListaFiltros"/>
+                    </StackPanel>
+
+                </StackPanel>
+                
+                <StackPanel Margin="10 20 0 0" Grid.Column="2">
+                    <TextBlock Text="Valores" TextAlignment="Center" FontWeight="Bold"/>
+
+                    <StackPanel Margin="10 0 10 0">
+                        <TextBlock Text="Campo"/>
+                        <ComboBox Grid.Column="0" Name="comboValueListaCampo" />
+                    </StackPanel>
+
+                    <StackPanel Margin="10 10 10 0">
+                        <TextBlock Text="Filtro" />
+                        <ComboBox Grid.Column="0" Name="comboValueListaFiltros"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <Grid Margin="100 30 100 0">
+                <Grid.ColumnDefinitions>
+                    
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+              
+                <Button Margin="0 0 10 0" Content="Limpar" Grid.Column="0" Name="botaoLimpar" Click="clicarBotaoLimpar"/>
+                <Button Margin="10 0 0 0" Content="Gerar" Grid.Column="1" Name="botaoGerar" Click="clicarBotaoGerar"/>
+
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>

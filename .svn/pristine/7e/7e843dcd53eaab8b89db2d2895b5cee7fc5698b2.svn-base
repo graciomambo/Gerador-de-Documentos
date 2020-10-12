@@ -1,0 +1,284 @@
+﻿
+
+using Microsoft.Win32;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.OleDb;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using Excel = Microsoft.Office.Interop.Excel;
+namespace Gerador_de_Documentos
+    {
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    /// 
+
+    public partial class MainWindow : Window
+        {
+        const String seleccaoVazia = "Nenhum Ficheiro Selecionado";
+        const String pesquisaVazia = "Nenhum Ficheiro Encontrado";
+        const String filtroVazio = "Nenhum Filtro Detectado";
+
+        Excel.Application document;
+        Excel.Workbook documentWorkbook;
+        Excel.Worksheet documentWorkSheet;
+        Excel.Workbook newDocumentWorkBook;
+        Excel.Worksheet newDocumentWorkSheet;
+        Excel.Range documentRange;
+        List<String> listaColunas;
+        int totalColunas;
+        int totalLinhas;
+        public MainWindow()
+            {
+            InitializeComponent();
+            ficheirosSelecionados.Items.Add(seleccaoVazia);
+
+            }
+        private void clicarBotaoSelecionar(object sender , RoutedEventArgs e)
+            {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Multiselect=false;
+            openFileDialog.Filter="Excel Files|*.xls;*.xlsx;*.xlsm;*.csv";
+            openFileDialog.InitialDirectory=Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            clicarBotaoLimpar(sender , e);
+            if(openFileDialog.ShowDialog()==true)
+                {
+                if(ficheirosSelecionados.Items.Count>0)
+                    ficheirosSelecionados.Items.Remove(ficheirosSelecionados.Items[0]);
+                foreach(string filePath in openFileDialog.FileNames)
+                    ficheirosSelecionados.Items.Add(filePath);
+                carregarCampos(openFileDialog.FileNames[0]);
+                comboUpdate();
+                }
+
+            }
+        private void clicarBotaoGerar(object sender , RoutedEventArgs e)
+            {
+            if(comboIndicadorListaFiltros.SelectedItem.ToString().Equals("Todos"))
+                {
+                comboIndicadorListaFiltros.Items.Remove(comboIndicadorListaFiltros.Items[0]);
+
+                if(comboUSListaFiltros.SelectedItem.ToString().Equals("Todos"))
+                    {
+                    comboUSListaFiltros.Items.Remove(comboUSListaFiltros.Items[0]);
+                    if((comboValueListaFiltros.SelectedItem.ToString().Equals("Excluir Zero")))
+                        { comboValueListaFiltros.Items.Remove(comboValueListaFiltros.Items[1]); }
+                    else { comboValueListaFiltros.Items.Remove(comboValueListaFiltros.Items[0]); }
+                    }
+
+
+                }
+
+
+
+
+
+            gerarFicheiro(comboIndicadorListaCampo.SelectedItem.ToString() , comboIndicadorListaFiltros.Items , comboUSListaCampo.SelectedItem.ToString() , comboUSListaFiltros.Items , comboValueListaCampo.SelectedItem.ToString() , comboValueListaFiltros.Items);
+
+            }
+
+        private void gerarFicheiro(String selectedIndicadorCampo , ItemCollection indicadorLista , String selectedUSCampo , ItemCollection usLista , String selectedValueCampo , ItemCollection valueLista)
+            {
+            int criado;
+            int ficheiro=1;
+            string c=null;
+                string d=null;
+            foreach(var indicador in indicadorLista)
+                {
+
+
+                criado=1;
+                foreach(var us in usLista)
+                    {
+                    newDocumentWorkBook=document.Workbooks.Add();
+                    newDocumentWorkSheet=newDocumentWorkBook.Sheets[1];
+                    for(int linha = 1; linha<totalLinhas; linha++)
+                        {
+                       
+
+
+
+
+                        var i = listaColunas.IndexOf(selectedIndicadorCampo)+1;
+                                var u = listaColunas.IndexOf(selectedUSCampo)+1;
+                       
+                             c = documentWorkSheet.Cells[i][linha].Value().ToString();
+                             d = documentWorkSheet.Cells[u][linha].Value().ToString();
+                            
+                                if(indicador.Equals(c) & us.Equals(d) | linha==1)
+                                {
+                            for(int coluna = 1; coluna<totalColunas; coluna++)
+                                {
+                      
+                                newDocumentWorkSheet.Cells[coluna][criado]=documentWorkSheet.Cells[coluna][linha];
+
+                                }
+                            criado++;
+                            }
+                               
+                                }
+                    newDocumentWorkSheet.SaveAs("DATIM_"+us+"_"+indicador+".xlsx");
+                    ficheiro++;
+                    }
+               
+                }
+
+
+
+                
+            fecharDocumento();
+            limpar();
+            }
+            
+
+        private void clicarBotaoLimpar(object sender , RoutedEventArgs e)
+            {
+            limpar();
+
+            }
+
+        private void limpar()
+            {
+            ficheirosSelecionados.Items.Clear();
+            comboIndicadorListaCampo.Items.Clear();
+            comboIndicadorListaFiltros.Items.Clear();
+            comboUSListaCampo.Items.Clear();
+            comboUSListaFiltros.Items.Clear();
+            comboValueListaCampo.Items.Clear();
+            comboValueListaFiltros.Items.Clear();
+            ficheirosSelecionados.Items.Add(seleccaoVazia);
+
+            comboUpdate();
+            }
+
+        private void comboUpdate()
+            {
+            updateComboStatus(comboIndicadorListaCampo);
+            updateComboStatus(comboIndicadorListaFiltros);
+            updateComboStatus(comboUSListaCampo);
+            updateComboStatus(comboUSListaFiltros);
+            updateComboStatus(comboValueListaCampo);
+            updateComboStatus(comboValueListaFiltros);
+            }
+
+        private void updateComboStatus(ComboBox combo)
+            {
+            if(combo.Items.Count>0)
+                combo.IsEnabled=true;
+            else
+                combo.IsEnabled=false;
+            }
+        private void carregarCampos(string filePath)
+            {
+           
+
+            carregarDocumento(filePath);
+            preencherCampos();
+            preencherComboBoxFiltro(comboIndicadorListaCampo , comboIndicadorListaFiltros);
+            preencherComboBoxFiltro(comboUSListaCampo , comboUSListaFiltros);
+            preencherComboBoxFiltroValor(comboValueListaCampo , comboValueListaFiltros);
+           
+
+           
+            }
+
+        private void carregarDocumento(string filePath)
+            {
+            document=new Excel.Application();
+            documentWorkbook=document.Workbooks.Open(filePath);
+            documentWorkSheet=documentWorkbook.Sheets[1];
+            documentRange=documentWorkSheet.UsedRange;
+
+            //Excel.Workbook newDocumentWorkbook = document.Workbooks.Add();
+            //Excel.Worksheet newDocumentWorkSheet= newDocumentWorkbook.Sheets[1];
+
+
+            totalColunas = documentRange.Columns.Count+1;
+            totalLinhas=documentRange.Cells.SpecialCells(Excel.XlCellType.xlCellTypeLastCell , Type.Missing).Row;
+            listaColunas = new List<String>();
+            for(int coluna = 1; coluna<totalColunas; coluna++)
+                {
+                if(documentRange.Cells[1 , coluna].Value.ToString()!=null)
+                listaColunas.Add(
+                documentRange.Cells[1,coluna].Value.ToString());
+                }
+
+            }
+
+
+
+        private void fecharDocumento()
+            {
+            
+            document.Quit();
+            Marshal.ReleaseComObject(documentRange);
+            Marshal.ReleaseComObject(documentWorkSheet);
+            Marshal.ReleaseComObject(documentWorkbook);
+            Marshal.ReleaseComObject(document);    
+            Marshal.ReleaseComObject(newDocumentWorkBook);
+            Marshal.ReleaseComObject(newDocumentWorkSheet);
+            }
+        private void preencherCampos()
+            {
+            foreach(string coluna in listaColunas)
+                {
+                comboIndicadorListaCampo.Items.Add(coluna);
+                comboUSListaCampo.Items.Add(coluna);
+                comboValueListaCampo.Items.Add(coluna);
+                }
+            comboIndicadorListaCampo.SelectedItem="Source Table";
+            comboUSListaCampo.SelectedItem="Nome_US_DATIM";
+            comboValueListaCampo.SelectedItem="Value";
+            }
+
+        private void preencherComboBoxFiltro(ComboBox combo , ComboBox filtro)
+            {
+            
+                String criterioPadrao = "Todos";
+                filtro.Items.Add(criterioPadrao);
+                filtro.SelectedItem=criterioPadrao;
+
+
+        
+            int coluna = combo.Items.IndexOf(combo.SelectedItem)+1;
+            document.Visible=true;
+            document.DisplayAlerts=false;
+            Excel.Range startCell= documentWorkSheet.Cells[coluna][2];
+            var s = startCell.Value;
+            Excel.Range endCell = documentWorkSheet.Cells[coluna][totalLinhas];
+            var e = endCell.Value;
+            Excel.Range intervalo = documentWorkSheet.Range[startCell , endCell];
+            
+            IEnumerable<dynamic> filtroList = intervalo.Cast<Excel.Range>().Select(o => o.Value2).Distinct();
+           
+            
+            foreach(String i in filtroList)
+                {
+                        filtro.Items.Add(i);
+                }
+            
+            }
+        private void preencherComboBoxFiltroValor(ComboBox combo , ComboBox filtro)
+            {
+                filtro.Items.Add("Excluir Zero");
+                filtro.Items.Add("Incluir Zero");
+                filtro.SelectedItem=filtro.Items[0];
+            }
+
+
+
+        }
+    }

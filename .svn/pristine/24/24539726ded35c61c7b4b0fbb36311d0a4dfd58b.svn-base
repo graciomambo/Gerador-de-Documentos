@@ -1,0 +1,53 @@
+﻿using LinqToExcel;
+using LinqToExcel.Attributes;
+using LinqToExcel.Query;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Gerador_de_Documentos
+    {
+    class Datim
+        {
+        [ExcelColumn("ID_DATIM")]
+        public String Id { get; set; }
+        [ExcelColumn("IndicatorMapping.Desag")]
+        public String Desagregado { get; set; }
+
+        [ExcelColumn("Support_Type")]
+        public String SuportType { get; set; }
+        [ExcelColumn("IndicatorMapping.EnteryFildID")]
+        public String EntryField { get; set; }
+        [ExcelColumn("Value")]
+        public String Value { get; set; }
+        [ExcelColumn("DataSet")]
+        public String DataSet { get; set; }
+        [ExcelColumn("Distrito_DATIM")]
+        public String Distrito { get; set; }
+        [ExcelColumn("Nome_US_DATIM")]
+        public String US { get; set; }
+
+        [ExcelColumn("Source_Table")]
+        public String SourceTable { get; set; }
+
+        [ExcelColumn("Indicators")]
+        public String Indicators { get; set; }
+        
+      
+       
+        public string CAMPO_INDICADOR_DEFEITO = "Source_Table";
+        public string CAMPO_US_DEFEITO;
+        public string CAMPO_VALOR_DEFEITO = "Value";
+        public string FILTRO_INDICADOR_DEFEITO = "Todos";
+        public string FILTRO_US_DEFEITO = "Todas";
+        public string FILTRO_VALOR_DEFEITO = "Excluir Zero";
+        public string SHEET_DEFEITO = "sheet1";
+ 
+        
+
+        
+        }
+    }
+

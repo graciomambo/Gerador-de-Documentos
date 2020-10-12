@@ -1,0 +1,58 @@
+﻿using LinqToExcel.Attributes;
+using LinqToExcel.Query;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Gerador_de_Documentos
+    {
+    class Datim
+        {
+        [ExcelColumn("ID_DATIM")]
+        public String Id { get; set; }
+        [ExcelColumn("IndicatorMapping.Desag")]
+        public String Desagregado { get; set; }
+
+        [ExcelColumn("Support_Type")]
+        public String SuportType { get; set; }
+        [ExcelColumn("IndicatorMapping.EnteryFildID")]
+        public String EntryField { get; set; }
+        [ExcelColumn("Value")]
+        public String Value { get; set; }
+        [ExcelColumn("DataSet")]
+        public String DataSet { get; set; }
+        [ExcelColumn("Distrito_DATIM")]
+        public String Distrito { get; set; }
+        [ExcelColumn("Nome_US_DATIM")]
+        public String US { get; set; }
+
+        [ExcelColumn("Source Table")]
+        public String SourceTable { get; set; }
+
+        [ExcelColumn("Indicators")]
+        public String Indicators { get; set; }
+        public static List<String> distintosIndicadores(ExcelQueryable<Datim> excel)
+            {
+            return (from d in excel
+                    select d.Indicators).Distinct().ToList();
+            }
+
+        public static List<String> distintasUs(ExcelQueryable<Datim> excel)
+            {
+            return (from d in excel
+                    select d.US).Distinct().ToList();
+            }
+
+        public const string CAMPO_INDICADOR_DEFEITO = "Source Table";
+        public const string CAMPO_US_DEFEITO = "Nome_US_DATIM";
+        public const string CAMPO_VALOR_DEFEITO = "Value";
+        public const string FILTRO_INDICADOR_DEFEITO = "Todos";
+        public const string FILTRO_US_DEFEITO = "Todas";
+        public const string FILTRO_VALOR_DEFEITO = "Excluir Zero";
+        public const string SHEET_DEFEITO = "sheet1";
+        }
+        }
+    
+    
