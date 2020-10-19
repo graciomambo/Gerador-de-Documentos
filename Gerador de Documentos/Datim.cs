@@ -37,7 +37,7 @@ namespace Gerador_de_Documentos
         
       
        
-        public string CAMPO_INDICADOR_DEFEITO = "Source_Table";
+        public string CAMPO_INDICADOR_DEFEITO;
         public string CAMPO_US_DEFEITO;
         public string CAMPO_VALOR_DEFEITO = "Value";
         public string FILTRO_INDICADOR_DEFEITO = "Todos";

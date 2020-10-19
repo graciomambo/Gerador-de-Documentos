@@ -5,16 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Gerador_de_Documentos"
         mc:Ignorable="d"
-        Title="Gerador de Documentos" Height="306.866" Width="800" WindowStartupLocation="CenterScreen">
-    <Border Padding="10">
-        <StackPanel Margin="0,0,0,-10">
+        Title="Gerador de Documentos" Height="330.259" Width="800" WindowStartupLocation="CenterScreen">
+    <Border Padding="10" Height="393" VerticalAlignment="Top" Margin="0,0,0,0">
+        <StackPanel Margin="0,0,0,88">
             <TextBlock Text="Ficheiro" FontWeight="Bold" Margin="0 10" TextAlignment="Center"/>
             <TextBlock Padding="1"/>
             <Grid Margin="20 0 10 0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
-             
+
                 </Grid.ColumnDefinitions>
                 <ListBox Margin="0 0 10 0" Grid.Column="0" Name="ficheirosSelecionados" />
                 <Button Margin="10 0 0 0" Content="Selecionar" Grid.Column="1" Name="botaoSelecionar" Click="clicarSelecionarFicheiro"/>
@@ -26,23 +26,23 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                
-                
-                
+
+
+
                 <StackPanel Grid.Column="0" Margin="10 20 0 0">
                     <TextBlock Text="Indicadores" TextAlignment="Center" FontWeight="Bold"/>
 
                     <StackPanel Margin="10 0 10 0">
                         <TextBlock Text="Campo"/>
-                    <ComboBox Grid.Column="0" Name="comboIndicadorListaCampo" />
+                        <ComboBox Grid.Column="0" Name="comboIndicadorListaCampo" />
                     </StackPanel>
-                    
+
                     <StackPanel Margin="10 10 10 0">
-                    <TextBlock Text="Filtro" />
-                    <ComboBox Grid.Column="0" Name="comboIndicadorListaFiltros"/>
+                        <TextBlock Text="Filtro" />
+                        <ComboBox Grid.Column="0" Name="comboIndicadorListaFiltros"/>
                     </StackPanel>
                 </StackPanel>
-                
+
                 <StackPanel Grid.Column="1" Margin="10 20 0 0">
                     <TextBlock Text="Unidades Sanitarias" TextAlignment="Center" FontWeight="Bold"/>
 
@@ -57,7 +57,7 @@
                     </StackPanel>
 
                 </StackPanel>
-                
+
                 <StackPanel Margin="10 20 0 0" Grid.Column="2">
                     <TextBlock Text="Valores" TextAlignment="Center" FontWeight="Bold"/>
 
@@ -75,16 +75,23 @@
 
             <Grid Margin="100 30 100 0">
                 <Grid.ColumnDefinitions>
-                    
+
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Margin="0 0 10 0" Content="Cancelar" Grid.Column="0" Name="botaoLimpar" Click="botaoSair"/>
+
                 <Button Margin="10 0 0 0" Content="Gerar" Grid.Column="1" Name="botaoGerar" Click="clicarBotaoGerar"/>
 
+
             </Grid>
-            
+            <Grid Margin="0 10 0 0" >
+                <ProgressBar  x:Name="PBar" Visibility="Hidden" HorizontalAlignment="Center" VerticalAlignment="Top" Width="800" Height="15" Value="0" />
+                <TextBlock x:Name="PBarText" Text="0%" Visibility="Hidden" HorizontalAlignment="Center"/>
+            </Grid>
         </StackPanel>
+
     </Border>
+
 </Window>

@@ -77,8 +77,20 @@ namespace Gerador_de_Documentos
                 excel.ReadOnly = true;
                 
                 excel.StrictMapping=StrictMappingType.ClassStrict;
-                
+
                 listaColunas = excel.GetColumnNames(datim.SHEET_DEFEITO).ToList();
+                //listaColunas = new List<String>();
+                //listaColunas.Insert(0, "ID_DATIM");
+                //listaColunas.Insert(1, "IndicatorMapping#Desag");
+                //listaColunas.Insert(2, "Support_Type");
+                //listaColunas.Insert(3, "IndicatorMapping#nteryFildID");
+                //listaColunas.Insert(4, "Value");
+                //listaColunas.Insert(5, "DataSet");
+                //listaColunas.Insert(6, "Distrito_DATIM");
+                //listaColunas.Insert(7, "Nome_US_DATIM");
+                //listaColunas.Insert(8, "Source#Table");
+                //listaColunas.Insert(9, "Indicators");
+
                 excel.AddMapping<Datim>(x => x.Id, listaColunas[0]);
                 excel.AddMapping<Datim>(x => x.Desagregado, listaColunas[1]);
                 excel.AddMapping<Datim>(x => x.SuportType, listaColunas[2]);
@@ -89,11 +101,13 @@ namespace Gerador_de_Documentos
                 excel.AddMapping<Datim>(x => x.US, listaColunas[7]);
                 excel.AddMapping<Datim>(x => x.SourceTable, listaColunas[8]);
                 excel.AddMapping<Datim>(x => x.Indicators, listaColunas[9]);
-                
-                
-                
-                datim.CAMPO_US_DEFEITO=listaColunas[7];
+
+
+        
              
+                datim.CAMPO_US_DEFEITO= listaColunas[7];
+                datim.CAMPO_INDICADOR_DEFEITO = listaColunas[8];
+
                 excel.UsePersistentConnection=false;
                 
                 carregarCampos(sender,e);
@@ -215,6 +229,22 @@ namespace Gerador_de_Documentos
 
         private void gerarFicheiro()
             {
+            Dispatcher.Invoke(() =>
+            {
+                PBar.Value = 0;
+                PBar.Visibility = Visibility.Visible;
+                PBarText.Visibility = Visibility.Visible;
+                botaoGerar.IsEnabled = false;
+                botaoSelecionar.IsEnabled = false;
+                comboIndicadorListaCampo.IsEnabled = false;
+                comboIndicadorListaFiltros.IsEnabled = false;
+                comboUSListaCampo.IsEnabled = false;
+                comboUSListaFiltros.IsEnabled = false;
+                comboValueListaCampo.IsEnabled = false;
+                comboValueListaFiltros.IsEnabled = false;
+
+            });
+           
             List<string> fi = new List<string>();
             List<string> fus = new List<string>();
             List<Datim> listaDatimActual = new List<Datim>();
@@ -244,7 +274,8 @@ namespace Gerador_de_Documentos
             Excel.Worksheet xlWorkSheet= (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
            
             int linha = 0;
-
+            int progress = 1;
+            string set = comboValueListaFiltros.SelectedItem.ToString();
             Task.Run(() =>
             {
             foreach(string i in fi)
@@ -255,80 +286,79 @@ namespace Gerador_de_Documentos
                             listaDatimActual=(from d in excel.Worksheet<Datim>()
                                               where d.US==u&&d.SourceTable==i
                                               select d).ToList();
-                            
+                        linha = 1;
 
-                        linha=1;
-                    
-                        foreach(var rid in listaDatimActual)
+                        foreach (var rid in listaDatimActual)
                             {
-                            if(comboValueListaFiltros.Equals(datim.CAMPO_VALOR_DEFEITO)&&!(rid.Value==""))
+                           
+
+                            if (set.Equals(datim.FILTRO_VALOR_DEFEITO) & rid.Value != null)
                                 {if(linha==1)
                                   {
                                         xlApp = new Excel.Application();
-                                        xlApp.Visible=true;
+                                        xlApp.Visible=false;
                                         misValue = System.Reflection.Missing.Value;
                                         xlWorkBook=xlApp.Workbooks.Add(misValue);
                                         xlWorkSheet=(Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
-                                        xlWorkSheet.Cells[1][linha]=listaColunas[0];
-                                        xlWorkSheet.Cells[2][linha]=listaColunas[1];
-                                        xlWorkSheet.Cells[3][linha]=listaColunas[2];
-                                        xlWorkSheet.Cells[4][linha]=listaColunas[3];
-                                        xlWorkSheet.Cells[5][linha]=listaColunas[4];
-                                        xlWorkSheet.Cells[6][linha]=listaColunas[5];
-                                        xlWorkSheet.Cells[7][linha]=listaColunas[6];
-                                        xlWorkSheet.Cells[7][linha]=listaColunas[7];
-                                        xlWorkSheet.Cells[8][linha]=listaColunas[8];
-                                        xlWorkSheet.Cells[9][linha]=listaColunas[9];
+                                        xlWorkSheet.Cells[1][linha]= "ID_DATIM";
+                                        xlWorkSheet.Cells[2][linha]= "IndicatorMapping.Desag";
+                                        xlWorkSheet.Cells[3][linha]= "Support_Type";
+                                        xlWorkSheet.Cells[4][linha]= "IndicatorMapping.EnteryFildID";
+                                        xlWorkSheet.Cells[5][linha]= "Value";
+                                        xlWorkSheet.Cells[6][linha]= "DataSet";
+                                        xlWorkSheet.Cells[7][linha]= "Distrito_DATIM";
+                                        xlWorkSheet.Cells[8][linha]= "Nome_US_DATIM";
+                                        xlWorkSheet.Cells[9][linha]= "Source.Table";
+                                        xlWorkSheet.Cells[10][linha]= "Indicators";
                                     linha++;
                                         }
-                                xlWorkSheet.Cells[1][linha]=rid.Id;
-                                xlWorkSheet.Cells[2][linha]=rid.Desagregado;
-                                xlWorkSheet.Cells[3][linha]=rid.SuportType;
-                                xlWorkSheet.Cells[4][linha]=rid.EntryField;
-                                xlWorkSheet.Cells[5][linha]=rid.Value;
-                                xlWorkSheet.Cells[6][linha]=rid.DataSet;
-                                xlWorkSheet.Cells[7][linha]=rid.Distrito;
-                                xlWorkSheet.Cells[7][linha]=rid.US;
-                                xlWorkSheet.Cells[8][linha]=rid.SourceTable;
-                                xlWorkSheet.Cells[9][linha]=rid.Indicators;
+                                xlWorkSheet.Cells[1][linha] = rid.Id;
+                                xlWorkSheet.Cells[2][linha] = rid.Desagregado;
+                                xlWorkSheet.Cells[3][linha] = rid.SuportType;
+                                xlWorkSheet.Cells[4][linha] = rid.EntryField;
+                                xlWorkSheet.Cells[5][linha] = rid.Value;
+                                xlWorkSheet.Cells[6][linha] = rid.DataSet;
+                                xlWorkSheet.Cells[7][linha] = rid.Distrito;
+                                xlWorkSheet.Cells[8][linha] = rid.US;
+                                xlWorkSheet.Cells[9][linha] = rid.SourceTable;
+                                xlWorkSheet.Cells[10][linha] = rid.Indicators;
                                 linha++;
                                 }
-                            if((!comboValueListaFiltros.Equals(datim.CAMPO_US_DEFEITO)))
+                            if (!set.Equals(datim.FILTRO_VALOR_DEFEITO))
+                            {if (rid.Value == null)
+                                { rid.Value = "0"; }
+                                if (linha == 1)
                                 {
-                                if(linha==1)
-                                    {
-                                    xlApp=new Excel.Application();
-                                    xlApp.Visible=true;
-                                   
-                                    xlWorkBook=xlApp.Workbooks.Add(misValue);
-                                    xlWorkSheet=(Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
-                                    xlWorkSheet.Cells[1][linha]=listaColunas[0];
-                                    xlWorkSheet.Cells[2][linha]=listaColunas[1];
-                                    xlWorkSheet.Cells[3][linha]=listaColunas[2];
-                                    xlWorkSheet.Cells[4][linha]=listaColunas[3];
-                                    xlWorkSheet.Cells[5][linha]=listaColunas[4];
-                                    xlWorkSheet.Cells[6][linha]=listaColunas[5];
-                                    xlWorkSheet.Cells[7][linha]=listaColunas[6];
-                                    xlWorkSheet.Cells[8][linha]=listaColunas[7];
-                                    xlWorkSheet.Cells[9][linha]=listaColunas[8];
-                                    xlWorkSheet.Cells[10][linha]=listaColunas[9];
+                                    xlApp = new Excel.Application();
+                                    xlApp.Visible = false;
+                                    misValue = System.Reflection.Missing.Value;
+                                    xlWorkBook = xlApp.Workbooks.Add(misValue);
+                                    xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
+                                    xlWorkSheet.Cells[1][linha] = "ID_DATIM";
+                                    xlWorkSheet.Cells[2][linha] = "IndicatorMapping.Desag";
+                                    xlWorkSheet.Cells[3][linha] = "Support_Type";
+                                    xlWorkSheet.Cells[4][linha] = "IndicatorMapping.EnteryFildID";
+                                    xlWorkSheet.Cells[5][linha] = "Value";
+                                    xlWorkSheet.Cells[6][linha] = "DataSet";
+                                    xlWorkSheet.Cells[7][linha] = "Distrito_DATIM";
+                                    xlWorkSheet.Cells[8][linha] = "Nome_US_DATIM";
+                                    xlWorkSheet.Cells[9][linha] = "Source.Table";
+                                    xlWorkSheet.Cells[10][linha] = "Indicators";
                                     linha++;
-                                    }
-                                xlWorkSheet.Cells[1][linha]=rid.Id;
-                                xlWorkSheet.Cells[2][linha]=rid.Desagregado;
-                                xlWorkSheet.Cells[3][linha]=rid.SuportType;
-                                xlWorkSheet.Cells[4][linha]=rid.EntryField;
-                                xlWorkSheet.Cells[5][linha]=rid.Value;
-                                xlWorkSheet.Cells[6][linha]=rid.DataSet;
-                                xlWorkSheet.Cells[7][linha]=rid.Distrito;
-                                xlWorkSheet.Cells[8][linha]=rid.US;
-                                xlWorkSheet.Cells[9][linha]=rid.SourceTable;
-                                xlWorkSheet.Cells[10][linha]=rid.Indicators;
-
-                                linha++;
                                 }
-
+                                xlWorkSheet.Cells[1][linha] = rid.Id;
+                                xlWorkSheet.Cells[2][linha] = rid.Desagregado;
+                                xlWorkSheet.Cells[3][linha] = rid.SuportType;
+                                xlWorkSheet.Cells[4][linha] = rid.EntryField;
+                                xlWorkSheet.Cells[5][linha] = rid.Value;
+                                xlWorkSheet.Cells[6][linha] = rid.DataSet;
+                                xlWorkSheet.Cells[7][linha] = rid.Distrito;
+                                xlWorkSheet.Cells[8][linha] = rid.US;
+                                xlWorkSheet.Cells[9][linha] = rid.SourceTable;
+                                xlWorkSheet.Cells[10][linha] = rid.Indicators;
+                                linha++;
                             }
+                        }
                         if(linha>=2)
                         {
                                 xlWorkSheet.Columns.AutoFit();
@@ -340,13 +370,40 @@ namespace Gerador_de_Documentos
                                 Marshal.ReleaseComObject(xlWorkSheet);
                                 Marshal.ReleaseComObject(xlWorkBook);
                                 Marshal.ReleaseComObject(xlApp);
-                            }
-
-
+                            
                         }
+                      
+                        progress++;
+                        Dispatcher.Invoke(() =>
+                        {
+                           
+                            PBar.Value = (progress * 100) / (fi.Count() * fus.Count());
+                            PBarText.Text = Math.Round(PBar.Value, 2) + "%";
+                        });
+
+
+                    }
+
 
                 }
+                Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show("Ficheiros gerados com sucesso", "Gerador", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                botaoGerar.IsEnabled = true;
+                comboIndicadorListaCampo.IsEnabled = true;
+                comboIndicadorListaFiltros.IsEnabled = true;
+                comboUSListaCampo.IsEnabled = true;
+                comboUSListaFiltros.IsEnabled = true;
+                comboValueListaCampo.IsEnabled = true;
+                    comboValueListaFiltros.IsEnabled = true;
+                    botaoSelecionar.IsEnabled = true;
+                    PBar.Visibility = Visibility.Hidden;
+                    PBarText.Visibility = Visibility.Hidden;
+                });
             });
+            
+
+
             }
         private void botaoSair(object sender , RoutedEventArgs e) { }
         }
