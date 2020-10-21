@@ -38,12 +38,20 @@ namespace Gerador_de_Documentos
         const String SELECCAO_VAZIA = "Nenhum Ficheiro Selecionado";
         
         String filePath;
-        Datim datim= new Datim();
+    
         private ExcelQueryFactory excel;
         private List<string> listaColunas;
+        private IQueryable<Datim> datimLista;
         private List<string> distinctUS;
         private List<string> distinctSourceTable;
 
+        public string CAMPO_INDICADOR_DEFEITO;
+        public string CAMPO_US_DEFEITO;
+        public string CAMPO_VALOR_DEFEITO = "Value";
+        public string FILTRO_INDICADOR_DEFEITO = "Todos";
+        public string FILTRO_US_DEFEITO = "Todas";
+        public string FILTRO_VALOR_DEFEITO = "Excluir Zero";
+        public string SHEET_DEFEITO = "sheet1";
         public MainWindow()
             {
             InitializeComponent();
@@ -66,7 +74,9 @@ namespace Gerador_de_Documentos
       
             if(openFileDialog.ShowDialog()==true)
                 {
-                if(ficheirosSelecionados.Items.Count>0)
+                iniciarLoading();
+                actualizarLoading(1, 1, 10);
+                if (ficheirosSelecionados.Items.Count>0)
                     ficheirosSelecionados.Items.Remove(ficheirosSelecionados.Items[0]);
                 foreach(string file in openFileDialog.FileNames)
                     ficheirosSelecionados.Items.Add(file);
@@ -76,10 +86,10 @@ namespace Gerador_de_Documentos
                
                 excel.ReadOnly = true;
                 
-                excel.StrictMapping=StrictMappingType.ClassStrict;
+                excel.StrictMapping=StrictMappingType.None;
 
-                listaColunas = excel.GetColumnNames(datim.SHEET_DEFEITO).ToList();
-                //listaColunas = new List<String>();
+                listaColunas = excel.GetColumnNames(SHEET_DEFEITO).ToList();
+               
                 //listaColunas.Insert(0, "ID_DATIM");
                 //listaColunas.Insert(1, "IndicatorMapping#Desag");
                 //listaColunas.Insert(2, "Support_Type");
@@ -91,34 +101,38 @@ namespace Gerador_de_Documentos
                 //listaColunas.Insert(8, "Source#Table");
                 //listaColunas.Insert(9, "Indicators");
 
-                excel.AddMapping<Datim>(x => x.Id, listaColunas[0]);
-                excel.AddMapping<Datim>(x => x.Desagregado, listaColunas[1]);
-                excel.AddMapping<Datim>(x => x.SuportType, listaColunas[2]);
-                excel.AddMapping<Datim>(x => x.EntryField, listaColunas[3]);
-                excel.AddMapping<Datim>(x => x.Value, listaColunas[4]);
-                excel.AddMapping<Datim>(x => x.DataSet, listaColunas[5]);
-                excel.AddMapping<Datim>(x => x.Distrito, listaColunas[6]);
-                excel.AddMapping<Datim>(x => x.US, listaColunas[7]);
-                excel.AddMapping<Datim>(x => x.SourceTable, listaColunas[8]);
-                excel.AddMapping<Datim>(x => x.Indicators, listaColunas[9]);
+               excel.AddMapping<Datim>(x => x.Id, listaColunas[0]);
+               excel.AddMapping<Datim>(x => x.Desagregado, listaColunas[1]);
+               excel.AddMapping<Datim>(x => x.SuportType, listaColunas[2]);
+               excel.AddMapping<Datim>(x => x.EntryField, listaColunas[3]);
+               excel.AddMapping<Datim>(x => x.Value, listaColunas[4]);
+               excel.AddMapping<Datim>(x => x.DataSet, listaColunas[5]);
+               excel.AddMapping<Datim>(x => x.Distrito, listaColunas[6]);
+               excel.AddMapping<Datim>(x => x.US, listaColunas[7]);
+               excel.AddMapping<Datim>(x => x.SourceTable, listaColunas[8]);
+               excel.AddMapping<Datim>(x => x.Indicators, listaColunas[9]);
 
 
         
              
-                datim.CAMPO_US_DEFEITO= listaColunas[7];
-                datim.CAMPO_INDICADOR_DEFEITO = listaColunas[8];
+                CAMPO_US_DEFEITO= listaColunas[7];
+                CAMPO_INDICADOR_DEFEITO = listaColunas[8];
 
                 excel.UsePersistentConnection=false;
-                
+
+                datimLista = (from d in excel.Worksheet<Datim>()
+                                                select d);
+                actualizarLoading(1, 1, 90);
                 carregarCampos(sender,e);
 
-                }
+                terminarLoading("Ficheiro Carregado com Sucesso");
+            }
 
             }
         private  void carregarCampos(object sender , RoutedEventArgs e)
-            {
-            
-             Task.Run(() =>
+        {
+           
+            Task.Run(() =>
              {
                  Dispatcher.Invoke(() =>
                  {
@@ -135,36 +149,34 @@ namespace Gerador_de_Documentos
                          comboUSListaCampo.IsEnabled=true;
                          comboValueListaCampo.IsEnabled=true;
                          }
-                     comboIndicadorListaCampo.SelectedItem=datim.CAMPO_INDICADOR_DEFEITO;
-                     comboUSListaCampo.SelectedItem=datim.CAMPO_US_DEFEITO;
-                     comboValueListaCampo.SelectedItem=datim.CAMPO_VALOR_DEFEITO;
+                     comboIndicadorListaCampo.SelectedItem=CAMPO_INDICADOR_DEFEITO;
+                     comboUSListaCampo.SelectedItem=CAMPO_US_DEFEITO;
+                     comboValueListaCampo.SelectedItem=CAMPO_VALOR_DEFEITO;
                  });
 
              });
 
-             Task.Run(() =>
-            {
-                distinctSourceTable=(from d in excel.Worksheet<Datim>()
-                            select d.SourceTable).Distinct().ToList();
-                preencherComboBoxFiltro(comboIndicadorListaFiltros , distinctSourceTable, datim.FILTRO_INDICADOR_DEFEITO);
-            });
-            Task.Run(() =>
-           {
-           distinctUS=(from d in excel.Worksheet<Datim>()
-                       select d.US).Distinct().ToList();
-                preencherComboBoxFiltro(comboUSListaFiltros , distinctUS, datim.FILTRO_US_DEFEITO);
-            });
-             Task.Run(() =>
-            {
+           
+            
+            distinctSourceTable = datimLista.Select(x => x.SourceTable).Distinct().ToList();
+                preencherComboBoxFiltro(comboIndicadorListaFiltros, distinctSourceTable, FILTRO_INDICADOR_DEFEITO);
+
+           
+            distinctUS = datimLista.Select(x => x.US).Distinct().ToList();
+               preencherComboBoxFiltro(comboUSListaFiltros,distinctUS, FILTRO_US_DEFEITO);
+            
                 preencherComboBoxFiltroValor(comboValueListaFiltros);
-            });
+        
                
-            comboIndicadorListaFiltros.SelectedItem=datim.FILTRO_INDICADOR_DEFEITO;
-            comboUSListaFiltros.SelectedItem=datim.FILTRO_US_DEFEITO;
-            comboValueListaFiltros.SelectedItem=datim.FILTRO_VALOR_DEFEITO;
+            comboIndicadorListaFiltros.SelectedItem=FILTRO_INDICADOR_DEFEITO;
+            comboUSListaFiltros.SelectedItem=FILTRO_US_DEFEITO;
+            comboValueListaFiltros.SelectedItem=FILTRO_VALOR_DEFEITO;
              
           
             }
+
+       
+
         private void preencherComboBoxFiltro(ComboBox filtro , List<string> distintos,String criterioPadrao)
             {
 
@@ -228,90 +240,68 @@ namespace Gerador_de_Documentos
             }
 
         private void gerarFicheiro()
-            {
-            Dispatcher.Invoke(() =>
-            {
-                PBar.Value = 0;
-                PBar.Visibility = Visibility.Visible;
-                PBarText.Visibility = Visibility.Visible;
-                botaoGerar.IsEnabled = false;
-                botaoSelecionar.IsEnabled = false;
-                comboIndicadorListaCampo.IsEnabled = false;
-                comboIndicadorListaFiltros.IsEnabled = false;
-                comboUSListaCampo.IsEnabled = false;
-                comboUSListaFiltros.IsEnabled = false;
-                comboValueListaCampo.IsEnabled = false;
-                comboValueListaFiltros.IsEnabled = false;
+        {
+            iniciarLoading();
 
-            });
-           
             List<string> fi = new List<string>();
             List<string> fus = new List<string>();
             List<Datim> listaDatimActual = new List<Datim>();
-            if(comboIndicadorListaFiltros.SelectedItem.ToString()==datim.FILTRO_INDICADOR_DEFEITO)
-                fi=distinctSourceTable;
+            if (comboIndicadorListaFiltros.SelectedItem.ToString() == FILTRO_INDICADOR_DEFEITO)
+                fi = distinctSourceTable;
             else
                 fi.Add(comboIndicadorListaFiltros.SelectedItem.ToString());
-            
-            if(comboUSListaFiltros.SelectedItem.ToString()==datim.FILTRO_US_DEFEITO)
-                fus=distinctUS;
+
+            if (comboUSListaFiltros.SelectedItem.ToString() == FILTRO_US_DEFEITO)
+                fus = distinctUS;
             else
                 fus.Add(comboUSListaFiltros.SelectedItem.ToString());
 
-
-
-
-            //(from d in excel.Worksheet<Datim>()
-            //select d.SourceTable).Distinct().ToList()
-            //where d.SourceTable==comboIndicadorListaCampo.SelectedItem.ToString()&&d.US==comboUSListaCampo.SelectedItem.ToString()
-
-
-            //.Where(x=>fus.Contains(x.US)).Where(x => fi.Contains(x.SourceTable)).ToList();
             object misValue = System.Reflection.Missing.Value;
-            Excel.Application xlApp= new Excel.Application();
-            Excel.Workbook xlWorkBook= xlApp.Workbooks.Add(misValue);
-            
-            Excel.Worksheet xlWorkSheet= (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
-           
+            Excel.Application xlApp = new Excel.Application();
+            Excel.Workbook xlWorkBook = xlApp.Workbooks.Add(misValue);
+
+            Excel.Worksheet xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
+
             int linha = 0;
             int progress = 1;
             string set = comboValueListaFiltros.SelectedItem.ToString();
             Task.Run(() =>
             {
-            foreach(string i in fi)
+                foreach (string i in fi)
                 {
-                foreach(string u in fus)
+                    foreach (string u in fus)
                     {
-                        
-                            listaDatimActual=(from d in excel.Worksheet<Datim>()
-                                              where d.US==u&&d.SourceTable==i
-                                              select d).ToList();
+
+                        listaDatimActual = (from d in excel.Worksheet<Datim>()
+                                            where d.US == u && d.SourceTable == i
+                                            select d).ToList();
                         linha = 1;
 
                         foreach (var rid in listaDatimActual)
-                            {
-                           
+                        {
 
-                            if (set.Equals(datim.FILTRO_VALOR_DEFEITO) & rid.Value != null)
-                                {if(linha==1)
-                                  {
-                                        xlApp = new Excel.Application();
-                                        xlApp.Visible=false;
-                                        misValue = System.Reflection.Missing.Value;
-                                        xlWorkBook=xlApp.Workbooks.Add(misValue);
-                                        xlWorkSheet=(Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
-                                        xlWorkSheet.Cells[1][linha]= "ID_DATIM";
-                                        xlWorkSheet.Cells[2][linha]= "IndicatorMapping.Desag";
-                                        xlWorkSheet.Cells[3][linha]= "Support_Type";
-                                        xlWorkSheet.Cells[4][linha]= "IndicatorMapping.EnteryFildID";
-                                        xlWorkSheet.Cells[5][linha]= "Value";
-                                        xlWorkSheet.Cells[6][linha]= "DataSet";
-                                        xlWorkSheet.Cells[7][linha]= "Distrito_DATIM";
-                                        xlWorkSheet.Cells[8][linha]= "Nome_US_DATIM";
-                                        xlWorkSheet.Cells[9][linha]= "Source.Table";
-                                        xlWorkSheet.Cells[10][linha]= "Indicators";
+
+                            if (set.Equals(FILTRO_VALOR_DEFEITO) & rid.Value != null)
+                            {
+                                if (linha == 1)
+                                {
+                                    xlApp = new Excel.Application();
+                                    xlApp.Visible = false;
+                                    misValue = System.Reflection.Missing.Value;
+                                    xlWorkBook = xlApp.Workbooks.Add(misValue);
+                                    xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
+                                    xlWorkSheet.Cells[1][linha] = listaColunas[0].Replace("#",".");
+                                    xlWorkSheet.Cells[2][linha] = listaColunas[1].Replace("#", ".");
+                                    xlWorkSheet.Cells[3][linha] = listaColunas[2].Replace("#", ".");
+                                    xlWorkSheet.Cells[4][linha] = listaColunas[3].Replace("#", ".");
+                                    xlWorkSheet.Cells[5][linha] = listaColunas[4].Replace("#", ".");
+                                    xlWorkSheet.Cells[6][linha] = listaColunas[5].Replace("#", ".");
+                                    xlWorkSheet.Cells[7][linha] = listaColunas[6].Replace("#", ".");
+                                    xlWorkSheet.Cells[8][linha] = listaColunas[7].Replace("#", ".");
+                                    xlWorkSheet.Cells[9][linha] = listaColunas[8].Replace("#", ".");
+                                    xlWorkSheet.Cells[10][linha] =listaColunas[9].Replace("#", ".");
                                     linha++;
-                                        }
+                                }
                                 xlWorkSheet.Cells[1][linha] = rid.Id;
                                 xlWorkSheet.Cells[2][linha] = rid.Desagregado;
                                 xlWorkSheet.Cells[3][linha] = rid.SuportType;
@@ -323,9 +313,10 @@ namespace Gerador_de_Documentos
                                 xlWorkSheet.Cells[9][linha] = rid.SourceTable;
                                 xlWorkSheet.Cells[10][linha] = rid.Indicators;
                                 linha++;
-                                }
-                            if (!set.Equals(datim.FILTRO_VALOR_DEFEITO))
-                            {if (rid.Value == null)
+                            }
+                            if (!set.Equals(FILTRO_VALOR_DEFEITO))
+                            {
+                                if (rid.Value == null)
                                 { rid.Value = "0"; }
                                 if (linha == 1)
                                 {
@@ -334,16 +325,16 @@ namespace Gerador_de_Documentos
                                     misValue = System.Reflection.Missing.Value;
                                     xlWorkBook = xlApp.Workbooks.Add(misValue);
                                     xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
-                                    xlWorkSheet.Cells[1][linha] = "ID_DATIM";
-                                    xlWorkSheet.Cells[2][linha] = "IndicatorMapping.Desag";
-                                    xlWorkSheet.Cells[3][linha] = "Support_Type";
-                                    xlWorkSheet.Cells[4][linha] = "IndicatorMapping.EnteryFildID";
-                                    xlWorkSheet.Cells[5][linha] = "Value";
-                                    xlWorkSheet.Cells[6][linha] = "DataSet";
-                                    xlWorkSheet.Cells[7][linha] = "Distrito_DATIM";
-                                    xlWorkSheet.Cells[8][linha] = "Nome_US_DATIM";
-                                    xlWorkSheet.Cells[9][linha] = "Source.Table";
-                                    xlWorkSheet.Cells[10][linha] = "Indicators";
+                                    xlWorkSheet.Cells[1][linha] = listaColunas[0].Replace("#", ".");
+                                    xlWorkSheet.Cells[2][linha] = listaColunas[1].Replace("#", ".");
+                                    xlWorkSheet.Cells[3][linha] = listaColunas[2].Replace("#", ".");
+                                    xlWorkSheet.Cells[4][linha] = listaColunas[3].Replace("#", ".");
+                                    xlWorkSheet.Cells[5][linha] = listaColunas[4].Replace("#", ".");
+                                    xlWorkSheet.Cells[6][linha] = listaColunas[5].Replace("#", ".");
+                                    xlWorkSheet.Cells[7][linha] = listaColunas[6].Replace("#", ".");
+                                    xlWorkSheet.Cells[8][linha] = listaColunas[7].Replace("#", ".");
+                                    xlWorkSheet.Cells[9][linha] = listaColunas[8].Replace("#", ".");
+                                    xlWorkSheet.Cells[10][linha] = listaColunas[9].Replace("#", ".");
                                     linha++;
                                 }
                                 xlWorkSheet.Cells[1][linha] = rid.Id;
@@ -359,52 +350,81 @@ namespace Gerador_de_Documentos
                                 linha++;
                             }
                         }
-                        if(linha>=2)
+                        if (linha >= 2)
                         {
-                                xlWorkSheet.Columns.AutoFit();
+                            xlWorkSheet.Columns.AutoFit();
                             xlWorkBook.WebOptions.Encoding = Microsoft.Office.Core.MsoEncoding.msoEncodingUTF8;
-                            xlWorkBook.SaveAs("DATIM_"+i+"_"+u , Excel.XlFileFormat.xlWorkbookNormal ,      misValue , misValue , misValue , misValue , Excel.XlSaveAsAccessMode.xlExclusive , misValue , misValue , misValue , misValue , misValue);
-                                xlWorkBook.Close(true , misValue , misValue);
-                                xlApp.Quit();
-                          
-                                Marshal.ReleaseComObject(xlWorkSheet);
-                                Marshal.ReleaseComObject(xlWorkBook);
-                                Marshal.ReleaseComObject(xlApp);
-                            
-                        }
-                      
-                        progress++;
-                        Dispatcher.Invoke(() =>
-                        {
-                           
-                            PBar.Value = (progress * 100) / (fi.Count() * fus.Count());
-                            PBarText.Text = Math.Round(PBar.Value, 2) + "%";
-                        });
+                            xlWorkBook.SaveAs("DATIM_" + i + "_" + u, Excel.XlFileFormat.xlWorkbookNormal, misValue, misValue, misValue, misValue, Excel.XlSaveAsAccessMode.xlExclusive, misValue, misValue, misValue, misValue, misValue);
+                            xlWorkBook.Close(true, misValue, misValue);
+                            xlApp.Quit();
 
+                            Marshal.ReleaseComObject(xlWorkSheet);
+                            Marshal.ReleaseComObject(xlWorkBook);
+                            Marshal.ReleaseComObject(xlApp);
+
+                        }
+
+                        progress++;
+                        actualizarLoading(fi.Count(), fus.Count(), progress);
 
                     }
 
 
                 }
-                Dispatcher.Invoke(() =>
-                {
-                    MessageBox.Show("Ficheiros gerados com sucesso", "Gerador", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                terminarLoading("Ficheiros gerados com sucesso");
+            });
+
+
+
+        }
+
+        private void actualizarLoading(int fi, int fus, int progress)
+        {
+            Dispatcher.Invoke(() =>
+            {
+
+                PBar.Value = (progress * 100) / (fi * fus);
+                PBarText.Text = Math.Round(PBar.Value, 2) + "%";
+            });
+        }
+
+        private void terminarLoading(String text)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                MessageBox.Show(text,"Gerador",  MessageBoxButton.OK, MessageBoxImage.Exclamation);
                 botaoGerar.IsEnabled = true;
                 comboIndicadorListaCampo.IsEnabled = true;
                 comboIndicadorListaFiltros.IsEnabled = true;
                 comboUSListaCampo.IsEnabled = true;
                 comboUSListaFiltros.IsEnabled = true;
                 comboValueListaCampo.IsEnabled = true;
-                    comboValueListaFiltros.IsEnabled = true;
-                    botaoSelecionar.IsEnabled = true;
-                    PBar.Visibility = Visibility.Hidden;
-                    PBarText.Visibility = Visibility.Hidden;
-                });
+                comboValueListaFiltros.IsEnabled = true;
+                botaoSelecionar.IsEnabled = true;
+                PBar.Visibility = Visibility.Hidden;
+                PBarText.Visibility = Visibility.Hidden;
             });
-            
+        }
 
+        private void iniciarLoading()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                PBar.Value = 0;
+                PBar.Visibility = Visibility.Visible;
+                PBarText.Visibility = Visibility.Visible;
+                botaoGerar.IsEnabled = false;
+                botaoSelecionar.IsEnabled = false;
+                comboIndicadorListaCampo.IsEnabled = false;
+                comboIndicadorListaFiltros.IsEnabled = false;
+                comboUSListaCampo.IsEnabled = false;
+                comboUSListaFiltros.IsEnabled = false;
+                comboValueListaCampo.IsEnabled = false;
+                comboValueListaFiltros.IsEnabled = false;
 
-            }
+            });
+        }
+
         private void botaoSair(object sender , RoutedEventArgs e) { }
         }
 

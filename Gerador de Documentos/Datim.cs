@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Gerador_de_Documentos
     {
-    class Datim
+  public class Datim
         {
       
         public String Id { get; set; }
@@ -37,13 +37,7 @@ namespace Gerador_de_Documentos
         
       
        
-        public string CAMPO_INDICADOR_DEFEITO;
-        public string CAMPO_US_DEFEITO;
-        public string CAMPO_VALOR_DEFEITO = "Value";
-        public string FILTRO_INDICADOR_DEFEITO = "Todos";
-        public string FILTRO_US_DEFEITO = "Todas";
-        public string FILTRO_VALOR_DEFEITO = "Excluir Zero";
-        public string SHEET_DEFEITO = "sheet1";
+
  
         
 
