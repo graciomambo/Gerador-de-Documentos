@@ -301,7 +301,7 @@ namespace Gerador_de_Documentos
                                     xlWorkSheet.Cells[6][linha] = listaColunas[5].Replace("#", ".");
                                     xlWorkSheet.Cells[7][linha] = listaColunas[6].Replace("#", ".");
                                     xlWorkSheet.Cells[8][linha] = listaColunas[7].Replace("#", ".");
-                                    xlWorkSheet.Cells[9][linha] = listaColunas[8].Replace("#", ".");
+                                    xlWorkSheet.Cells[9][linha] = listaColunas[8].Replace("_", ".");
                                     xlWorkSheet.Cells[10][linha] = listaColunas[9].Replace("#", ".");
                                     linha++;
                                 }
@@ -336,7 +336,7 @@ namespace Gerador_de_Documentos
                                     xlWorkSheet.Cells[6][linha] = listaColunas[5].Replace("#", ".");
                                     xlWorkSheet.Cells[7][linha] = listaColunas[6].Replace("#", ".");
                                     xlWorkSheet.Cells[8][linha] = listaColunas[7].Replace("#", ".");
-                                    xlWorkSheet.Cells[9][linha] = listaColunas[8].Replace("#", ".");
+                                    xlWorkSheet.Cells[9][linha] = listaColunas[8].Replace("_", ".");
                                     xlWorkSheet.Cells[10][linha] = listaColunas[9].Replace("#", ".");
                                     linha++;
                                 }
