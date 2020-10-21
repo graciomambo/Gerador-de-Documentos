@@ -52,6 +52,9 @@ namespace Gerador_de_Documentos
         public string FILTRO_US_DEFEITO = "Todas";
         public string FILTRO_VALOR_DEFEITO = "Excluir Zero";
         public string SHEET_DEFEITO = "sheet1";
+
+        public int progress { get;  set; }
+
         public MainWindow()
             {
             InitializeComponent();
@@ -263,7 +266,7 @@ namespace Gerador_de_Documentos
             Excel.Worksheet xlWorkSheet = (Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
 
             int linha = 0;
-            int progress = 1;
+             progress = 1;
             string set = comboValueListaFiltros.SelectedItem.ToString();
             Task.Run(() =>
             {
@@ -410,7 +413,9 @@ namespace Gerador_de_Documentos
         {
             Dispatcher.Invoke(() =>
             {
+                progress = 1;
                 PBar.Value = 0;
+                PBarText.Text ="0%";
                 PBar.Visibility = Visibility.Visible;
                 PBarText.Visibility = Visibility.Visible;
                 botaoGerar.IsEnabled = false;
